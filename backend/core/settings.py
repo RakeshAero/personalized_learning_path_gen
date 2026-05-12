@@ -137,3 +137,9 @@ STATIC_URL = 'static/'
 CORS_ALLOW_ALL_ORIGINS = True   # Allow Frontend Request
 
 AUTH_USER_MODEL = 'users.User' # Custom User Model
+
+REST_FRAMEWORK = {          # Configure DRF Authentication
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
