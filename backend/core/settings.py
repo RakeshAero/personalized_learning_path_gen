@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'users',        # Add the directories
-    'courses',
+    'courses.apps.CourseConfig',
     'assessments',
     'progress',
 ]
