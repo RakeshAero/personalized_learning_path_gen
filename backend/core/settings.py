@@ -42,9 +42,9 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'users',        # Add the directories
-    'courses.apps.CourseConfig',
-    'assessments',
-    'progress',
+    'courses.apps.CoursesConfig',
+    'assessments.apps.AssessmentsConfig',
+    'progress.apps.ProgressConfig',
 ]
 
 MIDDLEWARE = [
