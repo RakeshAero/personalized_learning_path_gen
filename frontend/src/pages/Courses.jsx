@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
+import Navbar from "../components/navbar";
 
 function Courses(){
 
     const [courses, setCourses] = useState([]);
 
-    useEffect(() => {
+    useEffect(() => {  //Handles sideffect of Outside component
         fetchCourses();
     }, []);
 
@@ -13,7 +14,7 @@ function Courses(){
 
         try {
 
-            const response = await API.get("courses/");
+            const response = await API.get("courses/");  // GET Request to Django
 
             setCourses(response.data);
 
@@ -25,9 +26,10 @@ function Courses(){
     };
 
     return (
-
+        <>
+        <Navbar />
         <div className="p-10">
-
+            
             <h1 className="text-3xl font-bold mb-6">
                 Courses
             </h1>
@@ -55,6 +57,7 @@ function Courses(){
             </div>
 
         </div>
+        </>
     );
 }
 

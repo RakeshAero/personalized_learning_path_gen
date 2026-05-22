@@ -4,6 +4,8 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
+import CreateCourse from './pages/CreateCourse';
+import Navbar from './components/navbar';
 
 function App() { 
   return (
@@ -17,6 +19,9 @@ function App() {
 
       {/* Courses Protected Route */}
       <Route path='/courses' element={<ProtectedRoute> <Courses/> </ProtectedRoute>} />
+
+      {/* Create-Course Protected Route */}
+      <Route path='/create-course' element={<ProtectedRoute> <CreateCourse/> </ProtectedRoute>} />
 
     </Routes>
   );  
