@@ -29,51 +29,31 @@ function Login() {
     return (
         <div className="flex items-center justify-center min-h-screen">
             <div className="border p-8 rounded">
+                {/* Title */}
                 <h1 className="text-2xl font-bold mb-4">Login Page</h1>
-            </div>
 
-            <input 
-                type="text" 
-                className="border p-2 w-full mb-3" 
-                placeholder="Username"
-                onChange={(e) => setUsername(e.target.value)}
+                {/* Username */}
+                <input 
+                    type="text" 
+                    className="border p-2 w-full mb-3" 
+                    placeholder="Username"
+                    onChange={(e) => setUsername(e.target.value)}
+                    />
+
+                {/* Password */}
+                <input 
+                    type="password"
+                    className="border p-2 w-full mb-3"
+                    placeholder="Password"
+                    onChange={(e) => setPassword(e.target.value)}
                 />
+
+                <button className="bg-black text-white px-4 py-2 rounded w-full" onClick={handleLogin}>
+                    Login
+                </button>
+            </div>   
         </div>
     );
 }
 
 export default Login;
-
-
-{/* <div className="flex items-center justify-center min-h-screen">
-
-            <div className="border p-8 rounded">
-
-                <h1 className="text-2xl font-bold mb-4">
-                    Login
-                </h1>
-
-                <input
-                    type="text"
-                    placeholder="Username"
-                    className="border p-2 w-full mb-3"
-                    onChange={(e) => setUsername(e.target.value)}
-                />
-
-                <input
-                    type="password"
-                    placeholder="Password"
-                    className="border p-2 w-full mb-3"
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <button
-                    onClick={handleLogin}
-                    className="bg-black text-white px-4 py-2 rounded w-full"
-                >
-                    Login
-                </button>
-
-            </div>
-
-        </div> */}
