@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
+
 
 function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate(); //Redirect
 
     const handleLogin = async () => {
         try{
@@ -12,12 +15,21 @@ function Login() {
                 setError('Please enter both username and password');
             }
 
+            // POST Request
             const response = await API.post('users/login/',{
                 username,
                 password
             });
+            
+            //Access & Refresh Token
+            const Tokens = response.data;
 
-            console.log(response.data);
+            //Store in LocalStorage
+            localStorage.setItem('access', Tokens.access);
+            localStorage.setItem('refresh', Tokens.refresh);
+
+            //Redirect to Dashboard
+            navigate('/dashboard');
         }
         catch(error){
             console.log("Error ",error.message);
