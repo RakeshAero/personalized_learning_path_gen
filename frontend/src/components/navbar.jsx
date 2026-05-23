@@ -19,7 +19,11 @@ function Navbar(){
             </Link>
 
             <Link to="/create-course">
-                Create Course
+                Create-Course
+            </Link>
+
+            <Link to="/create-module">
+                Create-Module
             </Link>
 
             <button onClick={logout}>

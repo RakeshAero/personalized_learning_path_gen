@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../api/axios";
 import Navbar from "../components/navbar";
 
 function Courses(){
 
     const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {  //Handles sideffect of Outside component
         fetchCourses();
@@ -22,8 +24,14 @@ function Courses(){
 
             console.log(error);
 
+        } finally {
+            setLoading(false);
         }
     };
+
+    if(loading){
+        return <div>Loading...</div>;
+    }
 
     return (
         <>
@@ -36,12 +44,15 @@ function Courses(){
 
             <div className="grid gap-4">
 
-                {courses.map((course) => (
+                {
+                
+                courses.length == 0 ? ( <p>No Course Available</p> ) :  // Ternary Operator
 
-                    <div
-                        key={course.id}
-                        className="border p-4 rounded"
-                    >
+                courses.map((course) => (
+
+                    <Link to={`/courses/${course.id}`} key={course.id} >
+
+                    <div className="border p-4 rounded">
                         <h2 className="text-xl font-bold">
                             {course.title}
                         </h2>
@@ -51,6 +62,8 @@ function Courses(){
                         </p>
 
                     </div>
+
+                    </Link>
 
                 ))}
 

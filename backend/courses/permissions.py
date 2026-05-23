@@ -7,4 +7,7 @@ class IsInstructorOrReadOnly(permissions.BasePermission):
         if request.method in ['GET', 'HEAD', 'OPTION']:
             return True
         
-        return request.user.role == ['instructor', 'admin']
+        if not request.user.is_authenticated:
+            return False
+        
+        return request.user.role in ['admin', 'instructor']

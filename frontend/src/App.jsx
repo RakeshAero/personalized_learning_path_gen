@@ -5,7 +5,10 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
 import CreateCourse from './pages/CreateCourse';
+import CourseList from './pages/CourseList';
+import CreateModule from './pages/CreateModule';
 import Navbar from './components/navbar';
+
 
 function App() { 
   return (
@@ -22,6 +25,12 @@ function App() {
 
       {/* Create-Course Protected Route */}
       <Route path='/create-course' element={<ProtectedRoute> <CreateCourse/> </ProtectedRoute>} />
+
+      {/* Course-List Protected Route */}
+      <Route path='/courses/:id' element={<ProtectedRoute> <CourseList/> </ProtectedRoute>} />
+
+      {/* Create-Module Protected Route */}
+      <Route path='/create-module' element={<ProtectedRoute> <CreateModule/> </ProtectedRoute>} />
 
     </Routes>
   );  
