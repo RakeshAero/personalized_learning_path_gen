@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
+import { AuthContext } from "../context/AuthContext";
 
 
 function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const { login } = useContext(AuthContext);
     const navigate = useNavigate(); //Redirect
 
     const handleLogin = async () => {
@@ -24,9 +26,8 @@ function Login() {
             //Access & Refresh Token
             const Tokens = response.data;
 
-            //Store in LocalStorage
-            localStorage.setItem('access', Tokens.access);
-            localStorage.setItem('refresh', Tokens.refresh);
+            //Login using Context
+            login(Tokens.access, Tokens.refresh);
 
             //Redirect to Dashboard
             navigate('/dashboard');
