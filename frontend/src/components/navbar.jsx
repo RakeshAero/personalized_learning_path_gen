@@ -26,6 +26,10 @@ function Navbar(){
                 Create-Module
             </Link>
 
+            <Link to="/assessments">
+                Assessments
+            </Link>
+
             <button onClick={logout}>
                 Logout
             </button>

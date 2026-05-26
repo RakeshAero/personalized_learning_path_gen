@@ -7,6 +7,8 @@ import Courses from './pages/Courses';
 import CreateCourse from './pages/CreateCourse';
 import CourseList from './pages/CourseList';
 import CreateModule from './pages/CreateModule';
+import Assessments from './pages/Assessments';
+import Questions from './pages/Questions';
 import Navbar from './components/navbar';
 
 
@@ -32,7 +34,11 @@ function App() {
       {/* Create-Module Protected Route */}
       <Route path='/create-module' element={<ProtectedRoute> <CreateModule/> </ProtectedRoute>} />
 
-      
+      {/* Assessments Protected Route */}
+      <Route path='/assessments' element={<ProtectedRoute> <Assessments/> </ProtectedRoute>} />
+
+      {/* Assessments Protected Route */}
+      <Route path='/questions/:id' element={<ProtectedRoute> <Questions/> </ProtectedRoute>} />
 
     </Routes>
   );  
