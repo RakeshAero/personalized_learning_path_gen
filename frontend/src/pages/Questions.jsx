@@ -36,25 +36,23 @@ function Questions() {
     };
 
     // Submit assessment
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         // Check if all questions answered
         if (Object.keys(selectedAnswers).length !== questions.length) {
             alert("Please answer all questions");
             return;
         }
 
-        let totalScore = 0;
-
-        questions.forEach((question) => {
-            if (
-                selectedAnswers[question.id] === question.correct_answer
-            ) {
-                totalScore++;
-            }
-        });
-
-        setScore(totalScore);
-        setSubmitted(true);
+        try {
+            const response = await API.post(`assessments/${id}/submit/`, {
+                answers: selectedAnswers,
+            });
+            setScore(response.data.score);
+            setSubmitted(true);
+        } catch (error) {
+            console.log(error);
+            alert("Failed to submit assessment. Please try again.");
+        }
     };
 
     // Button color logic

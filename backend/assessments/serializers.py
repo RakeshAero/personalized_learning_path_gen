@@ -15,3 +15,10 @@ class AssessmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assessment
         fields = '__all__'
+
+
+class AssessmentSubmissionSerializer(serializers.Serializer):
+    answers = serializers.DictField(
+        child=serializers.CharField(),
+        help_text="A dictionary mapping question ID (as string) to the selected answer."
+    )

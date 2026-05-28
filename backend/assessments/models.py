@@ -42,3 +42,22 @@ class Question(models.Model):
     def __str__ (self):
         return self.question_text
 
+
+class AssessmentSubmission(models.Model):
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        related_name='submissions'
+    )
+    assessment = models.ForeignKey(
+        Assessment,
+        on_delete=models.CASCADE,
+        related_name='submissions'
+    )
+    score = models.IntegerField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.assessment.title} - Score: {self.score}"
+
+
