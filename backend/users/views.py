@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import User
-from .serializer import RegisterSerializer
+from .serializer import RegisterSerializer , UserProfileSerializer
 
 # Register View
 class RegisterView(generics.CreateAPIView): # create-only endpoint for registration
@@ -17,7 +17,5 @@ class ProfileView(APIView):
     permission_classes = [IsAuthenticated]  # Ensure user is authenticated
 
     def get(self, request):
-        return Response({
-            'messaage': 'Authenticated Successfully | Protected Route',
-            'user' : request.user.username
-        })
+        serializer = UserProfileSerializer(request.user)  # Serialize the authenticated user
+        return Response(serializer.data)  # Return the serialized user data

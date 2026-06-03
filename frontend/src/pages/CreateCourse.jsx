@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import API from '../api/axios';
 import Navbar from '../components/navbar';
 
 function CreateCourse(){
+    const { user } = useContext(AuthContext);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
 

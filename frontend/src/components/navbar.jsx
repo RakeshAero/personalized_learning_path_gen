@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { useContext } from "react";
 
 function Navbar(){
+    const { user } = useContext(AuthContext);
     const logout = () => {
         localStorage.removeItem('access');
         localStorage.removeItem('refresh');
@@ -18,17 +21,25 @@ function Navbar(){
                 Courses
             </Link>
 
-            <Link to="/create-course">
-                Create-Course
-            </Link>
+            {user && user.role === 'admin' && (
+                <Link to="/create-course">
+                    Create-Course
+                </Link>
+            )}
 
-            <Link to="/create-module">
-                Create-Module
-            </Link>
+            {user && user.role === 'admin' && (
+                <Link to="/create-module">
+                    Create-Module
+                </Link>
+            )}
 
             <Link to="/assessments">
                 Assessments
             </Link>
+
+            {user && (
+                <span>Welcome, {user.username}!</span>
+            )}
 
             <button onClick={logout}>
                 Logout

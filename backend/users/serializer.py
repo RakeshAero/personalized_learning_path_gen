@@ -16,3 +16,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             role=validated_data.get('role', 'student')  # Default role is 'student'
         )
         return user
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'role']
