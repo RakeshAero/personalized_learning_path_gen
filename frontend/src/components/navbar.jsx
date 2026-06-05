@@ -4,6 +4,7 @@ import { useContext } from "react";
 
 function Navbar(){
     const { user } = useContext(AuthContext);
+    console.log("User in Navbar:", user);
     const logout = () => {
         localStorage.removeItem('access');
         localStorage.removeItem('refresh');

@@ -10,4 +10,4 @@ class IsInstructorOrReadOnly(permissions.BasePermission):
         if not request.user.is_authenticated: # Checks if the user is Logged in
             return False
         
-        return request.user.role in ['admin', 'instructor'] # POST, PUT, DELETE only allowed for admin and instructor 
+        return request.user.role in ['admin', 'instructor'] # POST, PUT, DELETE only allowed for admin and instructor  
