@@ -1,6 +1,9 @@
 // Routes 
 import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './routes/ProtectedRoute';
+import InstructorRoute from './routes/InstructorRoute';
+
+// Pages
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
@@ -26,13 +29,13 @@ function App() {
       <Route path='/courses' element={<ProtectedRoute> <Courses/> </ProtectedRoute>} />
 
       {/* Create-Course Protected Route */}
-      <Route path='/create-course' element={<ProtectedRoute> <CreateCourse/> </ProtectedRoute>} />
+      <Route path='/create-course' element={<InstructorRoute> <CreateCourse/> </InstructorRoute>} />
 
       {/* Course-List Protected Route */}
       <Route path='/courses/:id' element={<ProtectedRoute> <CourseList/> </ProtectedRoute>} />
 
       {/* Create-Module Protected Route */}
-      <Route path='/create-module' element={<ProtectedRoute> <CreateModule/> </ProtectedRoute>} />
+      <Route path='/create-module' element={<InstructorRoute> <CreateModule/> </InstructorRoute>} />
 
       {/* Assessments Protected Route */}
       <Route path='/assessments' element={<ProtectedRoute> <Assessments/> </ProtectedRoute>} />

@@ -34,9 +34,11 @@ function Navbar(){
                 </Link>
             )}
 
-            <Link to="/assessments">
-                Assessments
-            </Link>
+            {user && user.role === 'student' && (
+                <Link to="/assessments">
+                    Assessments
+                </Link>
+            )}
 
             {user && (
                 <span>Welcome, {user.username}!</span>

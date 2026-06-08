@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
 import API from '../api/axios';
 import Navbar from '../components/navbar';
+import { AuthContext } from '../context/AuthContext';
 
 function CreateCourse(){
     const { user } = useContext(AuthContext);
