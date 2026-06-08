@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Course, Module
+from .models import Course, Module, PersonalizedLearningPath
 
 class ModuleSerializer(serializers.ModelSerializer):
     
@@ -23,7 +23,7 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = '__all__'  # Fields that include in while returning
         read_only_fields = ['instructor']  # Frontend cannot manually set instructor
 
-    # Validate the title field for Course 
+    # Validate the title field for Course
     def validate_title(self, value):
         if len(value) < 5:
             raise serializers.ValidationError("Title too short")
@@ -31,4 +31,11 @@ class CourseSerializer(serializers.ModelSerializer):
         return value
 
 
+class PersonalizedLearningPathSerializer(serializers.ModelSerializer):
+    course_title = serializers.CharField(source='course.title', read_only=True)
+
+    class Meta:
+        model = PersonalizedLearningPath
+        fields = ['id', 'course', 'course_title', 'path_data', 'created_at']
+        read_only_fields = ['user', 'created_at']
 

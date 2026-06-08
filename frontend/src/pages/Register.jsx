@@ -34,7 +34,7 @@ function Register() {
 
     return (
         <div className="flex items-center justify-center min-h-screen">
-            <div className="border p-8 rounded w-80">
+            <div className="border p-8 rounded ">
                 <h1 className="text-2xl font-bold mb-4">Create Account</h1>
 
                 {error && (
