@@ -5,6 +5,7 @@ import InstructorRoute from './routes/InstructorRoute';
 
 // Pages
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
 import CreateCourse from './pages/CreateCourse';
@@ -12,6 +13,8 @@ import CourseList from './pages/CourseList';
 import CreateModule from './pages/CreateModule';
 import Assessments from './pages/Assessments';
 import Questions from './pages/Questions';
+import CreateAssessment from './pages/CreateAssessment';
+import CreateQuestion from './pages/CreateQuestion';
 import Navbar from './components/navbar';
 
 
@@ -20,7 +23,10 @@ function App() {
     <Routes> 
 
       {/* Login */}
-      <Route path="/" element={<Login />} /> 
+      <Route path="/" element={<Login />} />
+
+      {/* Register */}
+      <Route path="/register" element={<Register />} />
 
       {/* Dashboard Protected Route */}
       <Route path='/dashboard' element={<ProtectedRoute> <Dashboard/> </ProtectedRoute>} />
@@ -42,6 +48,12 @@ function App() {
 
       {/* Assessments Protected Route */}
       <Route path='/questions/:id' element={<ProtectedRoute> <Questions/> </ProtectedRoute>} />
+
+      {/* Create Assessment - Instructor/Admin only */}
+      <Route path='/create-assessment' element={<InstructorRoute> <CreateAssessment/> </InstructorRoute>} />
+
+      {/* Create Question - Instructor/Admin only */}
+      <Route path='/create-question' element={<InstructorRoute> <CreateQuestion/> </InstructorRoute>} />
 
     </Routes>
   );  

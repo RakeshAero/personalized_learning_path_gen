@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 
@@ -15,6 +15,7 @@ function Login() {
         try{
             if(!username || !password){
                 setError('Please enter both username and password');
+                return;
             }
 
             // POST Request
@@ -61,10 +62,19 @@ function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
-                <button className="bg-black text-white px-4 py-2 rounded w-full" onClick={handleLogin}>
+                {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+
+                <button className="bg-black text-white px-4 py-2 rounded w-full mb-3" onClick={handleLogin}>
                     Login
                 </button>
-            </div>   
+
+                <p className="text-sm text-center text-gray-600">
+                    Don't have an account?{' '}
+                    <Link to="/register" className="text-black font-semibold underline">
+                        Register
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 }

@@ -1,55 +1,53 @@
 import { useEffect, useState } from "react";
-import API from "../api/axios";
-import { useParams } from "react-router-dom";
-import Navbar from "../components/navbar";
 import { Link } from "react-router-dom";
-
+import API from "../api/axios";
+import Navbar from "../components/navbar";
 
 function Assessments() {
-
     const [assessments, setAssessments] = useState(null);
 
     useEffect(() => {
         fetchAssessments();
-    },[]);
+    }, []);
 
     const fetchAssessments = async () => {
-        try{
-            const response = await API.get(`assessments/`);
+        try {
+            const response = await API.get('assessments/');
             setAssessments(response.data);
-        }
-        catch(error){
-            alert(error);
+        } catch {
+            alert('Failed to load assessments');
         }
     };
-
-
 
     return (
         <>
             <Navbar />
 
-            <h2 className="text-2xl font-bold mt-10 mb-4">
-               Assessments
-            </h2>
-            <div className="grid gap-4">
-                {
-                assessments && assessments.length > 0 ? (
-                    assessments.map((assessment) => (
-                        <   Link to={`/questions/${assessment.id}`} key={assessment.id} >
+            <div className="p-8 max-w-3xl mx-auto">
+                <h2 className="text-2xl font-bold mb-6">Assessments</h2>
 
-                        <div className="border p-4 rounded">
-                            <h2 className="text-xl font-bold">
-                                {assessment.title}
-                            </h2>
-                            <p>
-                                {assessment.description}
-                            </p>
-                        </div>
-                        </Link>
-                    ))
+                {!assessments ? (
+                    <p>Loading...</p>
+                ) : assessments.length === 0 ? (
+                    <p className="text-gray-500">No assessments available.</p>
                 ) : (
-                    <p>No assessments found.</p>
+                    <div className="grid gap-4">
+                        {assessments.map((assessment) => (
+                            <Link to={`/questions/${assessment.id}`} key={assessment.id}>
+                                <div className="border p-4 rounded hover:bg-gray-50 transition">
+                                    <h2 className="text-xl font-bold">{assessment.title}</h2>
+                                    {assessment.module_title && (
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            Module: {assessment.module_title}
+                                        </p>
+                                    )}
+                                    <p className="text-sm text-gray-400 mt-1">
+                                        {assessment.questions?.length ?? 0} questions
+                                    </p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
                 )}
             </div>
         </>

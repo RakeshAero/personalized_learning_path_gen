@@ -54,3 +54,26 @@ class Module(models.Model):
 
     def __str__(self):
         return self.title
+
+# Personalized Learning Path Table
+class PersonalizedLearningPath(models.Model):
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        related_name='learning_paths'
+    )
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='learning_paths'
+    )
+
+    path_data = models.JSONField()  # LLM-returned ordered list
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'course')  # Ensure one path per user-course pair
+
+    def __str__(self):
+        return f"{self.user.username}'s Learning Path for {self.course.title}"

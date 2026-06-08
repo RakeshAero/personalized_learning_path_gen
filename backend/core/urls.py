@@ -21,6 +21,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),  # Include the users app URLs
 
-    path('api/', include('courses.urls')),  # Include the urls that created by Default Router 
-    path('api/', include('assessments.urls')), 
+    path('api/', include('courses.urls')),  # Include the urls that created by Default Router
+    path('api/', include('assessments.urls')),
+    path('api/', include('progress.urls')),
 ]
