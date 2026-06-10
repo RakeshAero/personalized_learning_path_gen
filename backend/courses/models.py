@@ -77,3 +77,28 @@ class PersonalizedLearningPath(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Learning Path for {self.course.title}"
+
+
+# Course Enrollment Table — tracks which learner joined which course
+class CourseEnrollment(models.Model):
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        related_name='enrollments'
+    )
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='enrollments'
+    )
+
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('user', 'course')  # one enrollment per learner per course
+
+    def __str__(self):
+        return f"{self.user.username} enrolled in {self.course.title}"

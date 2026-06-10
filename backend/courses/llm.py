@@ -3,7 +3,7 @@ import anthropic
 from django.conf import settings
 
 
-def generate_personalized_path(course_title, modules, score, total):
+def generate_personalized_path(course_title, modules, score, total, skill_scores=None):
     """
     Calls Anthropic Claude to reorder course modules into a personalized
     learning path based on the learner's onboarding assessment result.
@@ -13,6 +13,7 @@ def generate_personalized_path(course_title, modules, score, total):
         modules (list): [{"id": int, "title": str, "difficulty": str, "order": int}, ...]
         score (int): Number of correct answers.
         total (int): Total number of questions.
+        skill_scores (dict, optional): Per-skill percentages e.g. {"Arrays": 80.0, "Trees": 20.0}
 
     Returns:
         list: [{"module_id": int, "title": str, "skip": bool, "reason": str}, ...]
@@ -35,10 +36,20 @@ def generate_personalized_path(course_title, modules, score, total):
         for m in modules
     )
 
+    # Build skill breakdown section for the prompt
+    if skill_scores:
+        skill_lines = "\n".join(
+            f"  - {tag}: {pct}% {'✅ strong' if pct >= 70 else '⚠️ needs work' if pct >= 40 else '❌ weak'}"
+            for tag, pct in sorted(skill_scores.items(), key=lambda x: -x[1])
+        )
+        skill_section = f"\nSkill-domain breakdown:\n{skill_lines}"
+    else:
+        skill_section = ""
+
     prompt = f"""You are a learning path optimizer for an online course platform.
 
 Course: "{course_title}"
-Learner's onboarding assessment: {score}/{total} ({percentage}%) — skill level: {skill_level}
+Learner's onboarding assessment: {score}/{total} ({percentage}%) — skill level: {skill_level}{skill_section}
 
 Available modules (current default order):
 {module_list_text}
@@ -47,9 +58,11 @@ Your task:
 Reorder these modules into the best personalized learning path for this learner.
 
 Rules:
-- If the learner is advanced (>=80%), they can skip easy modules and start with harder ones.
-- If the learner is a beginner (<50%), always start with the easiest modules first, no skipping.
-- If intermediate, keep a sensible progression — no skipping unless clearly redundant.
+- Use the skill-domain breakdown to skip modules covering skills the learner already knows well (>=70%).
+- For skills scored below 40%, prioritize foundational modules on that topic.
+- If the learner is advanced (>=80% overall), they can skip easy modules and start with harder ones.
+- If the learner is a beginner (<50% overall), always start with the easiest modules first, no skipping.
+- If intermediate, keep a sensible progression — skip only modules where the learner scored >=70% in that skill.
 - Every module must appear exactly once in your output.
 - "skip: true" means the system will visually mark it as optional — the learner still sees it.
 
@@ -59,7 +72,7 @@ Each item must have exactly these keys: module_id (int), title (str), skip (bool
 Example format:
 [
   {{"module_id": 2, "title": "Module Name", "skip": false, "reason": "Good foundation for beginners"}},
-  {{"module_id": 5, "title": "Advanced Topic", "skip": true, "reason": "Already proficient based on assessment score"}}
+  {{"module_id": 5, "title": "Advanced Topic", "skip": true, "reason": "Already proficient: Arrays 80%"}}
 ]"""
 
     try:

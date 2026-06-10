@@ -16,6 +16,9 @@ import Questions from './pages/Questions';
 import CreateAssessment from './pages/CreateAssessment';
 import CreateQuestion from './pages/CreateQuestion';
 import Navbar from './components/navbar';
+import TakeOnboardingAssessment from './pages/TakeOnboardingAssessment';
+import LearnerDashboard from './pages/LearnerDashboard';
+import SkillResult from './pages/SkillResult';
 
 
 function App() { 
@@ -30,6 +33,9 @@ function App() {
 
       {/* Dashboard Protected Route */}
       <Route path='/dashboard' element={<ProtectedRoute> <Dashboard/> </ProtectedRoute>} />
+
+      {/* Learner Dashboard */}
+      <Route path='/learner-dashboard' element={<ProtectedRoute> <LearnerDashboard/> </ProtectedRoute>} />
 
       {/* Courses Protected Route */}
       <Route path='/courses' element={<ProtectedRoute> <Courses/> </ProtectedRoute>} />
@@ -54,6 +60,12 @@ function App() {
 
       {/* Create Question - Instructor/Admin only */}
       <Route path='/create-question' element={<InstructorRoute> <CreateQuestion/> </InstructorRoute>} />
+
+      {/* Take Onboarding Assessment */}
+      <Route path='/onboarding/:id' element={<ProtectedRoute> <TakeOnboardingAssessment/> </ProtectedRoute>} />
+
+      {/* Skill assessment result */}
+      <Route path='/skill-result/:assessmentId' element={<ProtectedRoute> <SkillResult/> </ProtectedRoute>} />
 
     </Routes>
   );  

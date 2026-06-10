@@ -12,6 +12,7 @@ function CreateQuestion() {
     const [option4, setOption4] = useState('');
     const [correctAnswer, setCorrectAnswer] = useState('');
     const [difficulty, setDifficulty] = useState('easy');
+    const [skillTag, setSkillTag] = useState('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -47,6 +48,7 @@ function CreateQuestion() {
                 option_4: option4,
                 correct_answer: correctAnswer,
                 difficulty,
+                skill_tag: skillTag,
             });
             alert('Question Created');
             setAssessmentId('');
@@ -57,6 +59,7 @@ function CreateQuestion() {
             setOption4('');
             setCorrectAnswer('');
             setDifficulty('easy');
+            setSkillTag('');
         } catch {
             alert('Error creating question');
         }
@@ -65,80 +68,105 @@ function CreateQuestion() {
     return (
         <>
             <Navbar />
-            <div className="max-w-xl mx-auto mt-10 border p-6 rounded">
+            <div className="max-w-xl mx-auto mt-10 border p-6 rounded shadow bg-white">
                 <h1 className="text-2xl font-bold mb-5">Create Question</h1>
 
                 {loading ? (
                     <p>Loading assessments...</p>
                 ) : (
-                    <form onSubmit={handleSubmit}>
-                        <label className="block text-sm font-medium mb-1">Assessment</label>
-                        <select
-                            className="border p-2 w-full mb-4 rounded"
-                            value={assessmentId}
-                            onChange={(e) => setAssessmentId(e.target.value)}
-                        >
-                            <option value="">-- Select an Assessment --</option>
-                            {assessments.map((a) => (
-                                <option key={a.id} value={a.id}>
-                                    {a.title}
-                                </option>
-                            ))}
-                        </select>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Assessment</label>
+                            <select
+                                className="border p-2 w-full rounded"
+                                value={assessmentId}
+                                onChange={(e) => setAssessmentId(e.target.value)}
+                            >
+                                <option value="">-- Select an Assessment --</option>
+                                {assessments.map((a) => (
+                                    <option key={a.id} value={a.id}>
+                                        {a.title}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                        <label className="block text-sm font-medium mb-1">Question</label>
-                        <textarea
-                            placeholder="Enter your question..."
-                            className="border p-2 w-full mb-4 rounded"
-                            rows="3"
-                            value={questionText}
-                            onChange={(e) => setQuestionText(e.target.value)}
-                        />
-
-                        <label className="block text-sm font-medium mb-2">Options</label>
-                        {[
-                            ['Option A', option1, setOption1],
-                            ['Option B', option2, setOption2],
-                            ['Option C', option3, setOption3],
-                            ['Option D', option4, setOption4],
-                        ].map(([label, value, setter]) => (
-                            <input
-                                key={label}
-                                type="text"
-                                placeholder={label}
-                                className="border p-2 w-full mb-3"
-                                value={value}
-                                onChange={(e) => {
-                                    setter(e.target.value);
-                                    if (correctAnswer === value) setCorrectAnswer('');
-                                }}
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Question</label>
+                            <textarea
+                                placeholder="Enter your question..."
+                                className="border p-2 w-full rounded"
+                                rows="3"
+                                value={questionText}
+                                onChange={(e) => setQuestionText(e.target.value)}
                             />
-                        ))}
+                        </div>
 
-                        <label className="block text-sm font-medium mb-1">Correct Answer</label>
-                        <select
-                            className="border p-2 w-full mb-4 rounded"
-                            value={correctAnswer}
-                            onChange={(e) => setCorrectAnswer(e.target.value)}
-                        >
-                            <option value="">-- Select Correct Answer --</option>
-                            {filledOptions.map((opt, i) => (
-                                <option key={i} value={opt}>{opt}</option>
-                            ))}
-                        </select>
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Options</label>
+                            <div className="space-y-2">
+                                {[
+                                    ['Option A', option1, setOption1],
+                                    ['Option B', option2, setOption2],
+                                    ['Option C', option3, setOption3],
+                                    ['Option D', option4, setOption4],
+                                ].map(([label, value, setter]) => (
+                                    <input
+                                        key={label}
+                                        type="text"
+                                        placeholder={label}
+                                        className="border p-2 w-full rounded"
+                                        value={value}
+                                        onChange={(e) => {
+                                            setter(e.target.value);
+                                            if (correctAnswer === value) setCorrectAnswer('');
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
 
-                        <label className="block text-sm font-medium mb-1">Difficulty</label>
-                        <select
-                            className="border p-2 w-full mb-4 rounded"
-                            value={difficulty}
-                            onChange={(e) => setDifficulty(e.target.value)}
-                        >
-                            <option value="easy">Easy</option>
-                            <option value="medium">Medium</option>
-                            <option value="hard">Hard</option>
-                        </select>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Correct Answer</label>
+                            <select
+                                className="border p-2 w-full rounded"
+                                value={correctAnswer}
+                                onChange={(e) => setCorrectAnswer(e.target.value)}
+                            >
+                                <option value="">-- Select Correct Answer --</option>
+                                {filledOptions.map((opt, i) => (
+                                    <option key={i} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                        <button className="bg-black text-white px-4 py-2 rounded w-full">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Difficulty</label>
+                                <select
+                                    className="border p-2 w-full rounded"
+                                    value={difficulty}
+                                    onChange={(e) => setDifficulty(e.target.value)}
+                                >
+                                    <option value="easy">Easy</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Skill Tag (e.g. Arrays, Recursion)</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Arrays"
+                                    className="border p-2 w-full rounded"
+                                    value={skillTag}
+                                    onChange={(e) => setSkillTag(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <button className="bg-black text-white px-4 py-2 rounded w-full hover:bg-gray-800 transition">
                             Create Question
                         </button>
                     </form>

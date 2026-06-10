@@ -25,7 +25,8 @@ function Navbar() {
             {isAdmin && <Link to="/create-question">Create Question</Link>}
 
             {user?.role === 'student' && (
-                <Link to="/assessments">Assessments</Link>
+                // <Link to="/assessments">Assessments</Link>
+                <Link to="/take-assessment">Take Assessment</Link>
             )}
 
             {user && (
