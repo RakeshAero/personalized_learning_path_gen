@@ -3,9 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Progress
+from .models import Progress, SubtopicProgress
 from .serializers import ProgressSerializer
-from courses.models import Module
+from courses.models import Module, Subtopic
 
 
 class ProgressViewSet(viewsets.ViewSet):
@@ -50,3 +50,48 @@ class ProgressViewSet(viewsets.ViewSet):
 
         serializer = ProgressSerializer(progress, many=True)
         return Response(serializer.data)
+
+
+class SubtopicProgressViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        course_id = request.query_params.get('course_id')
+        if course_id:
+            progress = SubtopicProgress.objects.filter(
+                user=request.user,
+                subtopic__module__course_id=course_id
+            )
+        else:
+            progress = SubtopicProgress.objects.filter(user=request.user)
+
+        data = [
+            {
+                "subtopic_id": p.subtopic_id,
+                "completed": p.completed,
+                "updated_at": p.updated_at
+            } for p in progress
+        ]
+        return Response(data)
+
+    @action(detail=False, methods=['post'])
+    def complete(self, request):
+        subtopic_id = request.data.get('subtopic_id')
+        if not subtopic_id:
+            return Response({'error': 'subtopic_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        subtopic = get_object_or_404(Subtopic, id=subtopic_id)
+
+        progress, _ = SubtopicProgress.objects.get_or_create(
+            user=request.user,
+            subtopic=subtopic,
+        )
+        progress.completed = True
+        progress.save()
+
+        return Response({
+            "subtopic_id": progress.subtopic_id,
+            "completed": progress.completed,
+            "updated_at": progress.updated_at
+        }, status=status.HTTP_200_OK)
+

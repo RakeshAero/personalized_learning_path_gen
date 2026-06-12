@@ -62,7 +62,7 @@ function App() {
       <Route path='/create-question' element={<InstructorRoute> <CreateQuestion/> </InstructorRoute>} />
 
       {/* Take Onboarding Assessment */}
-      <Route path='/onboarding/:id' element={<ProtectedRoute> <TakeOnboardingAssessment/> </ProtectedRoute>} />
+      <Route path='/take-assessment' element={<ProtectedRoute> <TakeOnboardingAssessment/> </ProtectedRoute>} />
 
       {/* Skill assessment result */}
       <Route path='/skill-result/:assessmentId' element={<ProtectedRoute> <SkillResult/> </ProtectedRoute>} />

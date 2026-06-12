@@ -98,7 +98,25 @@ class CourseEnrollment(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ('user', 'course')  # one enrollment per learner per course
+        #UNIQUE(user_id, course_id)
+        unique_together = ('user', 'course')  # One user can have only one personalized learning path per course.
 
     def __str__(self):
         return f"{self.user.username} enrolled in {self.course.title}"
+
+
+class Subtopic(models.Model):
+    module = models.ForeignKey(
+        Module,
+        on_delete=models.CASCADE,
+        related_name='subtopics'
+    )
+    title = models.CharField(max_length=255)
+    content = models.JSONField(default=list, blank=True)  # stores list of {"type": "header"|"paragraph", "value": "text"}
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.module.title} - {self.title}"

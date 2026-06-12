@@ -131,3 +131,48 @@ def _default_path(modules):
         }
         for m in sorted(modules, key=lambda x: x["order"])
     ]
+
+
+def generate_course_intro_overview(course_title, course_description, modules):
+    """
+    Calls Anthropic Claude to generate a welcoming note and an organized overview of the course's modules.
+    """
+    if not modules:
+        return f"# Welcome to {course_title}\n\n{course_description}\n\nThere are no modules registered yet."
+
+    module_list_text = "\n".join(
+        f"- {m.title}: {m.description}" for m in modules
+    )
+
+    prompt = f"""You are an educational assistant. Generate an engaging and structured welcome introduction for this course.
+
+Course: "{course_title}"
+Description: "{course_description}"
+
+Upcoming Modules:
+{module_list_text}
+
+Provide:
+1. A warm, standardized welcome note.
+2. A beautiful, organized summary/list of the upcoming modules, explaining what the student will learn.
+
+Format your output in clean Markdown. Avoid any meta-commentary, introductory remarks (like "Here is the response"), or trailing notes. Return ONLY the markdown.
+"""
+    try:
+        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+        response = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.content[0].text.strip()
+    except Exception as e:
+        print(f"[LLM] Error generating intro overview: {e}")
+        # Return fallback markdown
+        fallback = f"# Welcome to {course_title}\n\n"
+        fallback += f"{course_description}\n\n"
+        fallback += "## Upcoming Modules\n\n"
+        for m in modules:
+            fallback += f"### {m.title}\n{m.description}\n\n"
+        return fallback
+

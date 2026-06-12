@@ -18,7 +18,7 @@ function TakeOnboardingAssessment() {
 
     const fetchAssessment = async () => {
         try {
-            const response = await API.get(`assessments/${id}/`);
+            const response = await API.get(`questions`);
             setAssessment(response.data);
         } catch (error) {
             console.error("Failed to fetch assessment", error);
@@ -39,7 +39,8 @@ function TakeOnboardingAssessment() {
         e.preventDefault();
 
         // Check that all questions have answers
-        const questions = assessment?.questions || [];
+        // const questions = assessment?.questions || [];
+        const questions = assessment;
         if (questions.length === 0) return;
 
         const unanswered = questions.filter(q => !answers[q.id]);
@@ -73,7 +74,7 @@ function TakeOnboardingAssessment() {
         );
     }
 
-    if (!assessment || !assessment.questions || assessment.questions.length === 0) {
+    if (!assessment || assessment.length === 0) {
         return (
             <>
                 <Navbar />
@@ -98,7 +99,7 @@ function TakeOnboardingAssessment() {
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <div className="mb-8 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
                     <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm uppercase tracking-wider mb-2">
-                        <span>🎯 Onboarding Gate</span>
+                        <span>Onboarding Gate</span>
                     </div>
                     <h2 className="text-3xl font-extrabold text-gray-900">
                         {assessment.title}
@@ -109,7 +110,7 @@ function TakeOnboardingAssessment() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {assessment.questions.map((question, index) => (
+                    {assessment.map((question, index) => (
                         <div
                             key={question.id}
                             className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6"
