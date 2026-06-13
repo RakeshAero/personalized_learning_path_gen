@@ -20,12 +20,15 @@ function SkillResult() {
             if (response.data.submitted) {
                 setSubmission(response.data);
                 
-                // Fetch assessment detail to resolve the course
+                // Fetch assessment detail to resolve the course.
+                // Onboarding assessments link directly to a course; module-level
+                // assessments resolve their course via the module.
                 const assessResponse = await API.get(`assessments/${response.data.assessment}/`);
+                const data = assessResponse.data;
+                const resolvedCourseId = data.course || data.module?.course || null;
                 setCourseInfo({
-                    courseId: assessResponse.data.course || assessResponse.data.module_title ? assessResponse.data.module : null,
-                    courseTitle: assessResponse.data.course_title || "Course",
-                    courseActualId: assessResponse.data.course
+                    courseTitle: data.course_title || data.module_title || "Course",
+                    courseActualId: resolvedCourseId,
                 });
             } else {
                 setSubmission(null);

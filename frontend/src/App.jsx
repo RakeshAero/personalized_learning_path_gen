@@ -19,9 +19,10 @@ import Navbar from './components/navbar';
 import TakeOnboardingAssessment from './pages/TakeOnboardingAssessment';
 import LearnerDashboard from './pages/LearnerDashboard';
 import SkillResult from './pages/SkillResult';
+import GenerateCurriculum from './pages/GenerateCurriculum';
 
 
-function App() { 
+function App() {
   return (
     <Routes> 
 
@@ -62,10 +63,13 @@ function App() {
       <Route path='/create-question' element={<InstructorRoute> <CreateQuestion/> </InstructorRoute>} />
 
       {/* Take Onboarding Assessment */}
-      <Route path='/take-assessment' element={<ProtectedRoute> <TakeOnboardingAssessment/> </ProtectedRoute>} />
+      <Route path='/onboarding/:id' element={<ProtectedRoute> <TakeOnboardingAssessment/> </ProtectedRoute>} />
 
       {/* Skill assessment result */}
       <Route path='/skill-result/:assessmentId' element={<ProtectedRoute> <SkillResult/> </ProtectedRoute>} />
+
+      {/* AI Curriculum Generator - Instructor only */}
+      <Route path='/courses/:id/generate' element={<InstructorRoute> <GenerateCurriculum/> </InstructorRoute>} />
 
     </Routes>
   );  

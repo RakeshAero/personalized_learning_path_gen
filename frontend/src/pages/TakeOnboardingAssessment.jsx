@@ -18,7 +18,8 @@ function TakeOnboardingAssessment() {
 
     const fetchAssessment = async () => {
         try {
-            const response = await API.get(`questions`);
+            // Fetch THIS assessment (with its questions), not every question in the DB
+            const response = await API.get(`assessments/${id}/`);
             setAssessment(response.data);
         } catch (error) {
             console.error("Failed to fetch assessment", error);
@@ -39,8 +40,7 @@ function TakeOnboardingAssessment() {
         e.preventDefault();
 
         // Check that all questions have answers
-        // const questions = assessment?.questions || [];
-        const questions = assessment;
+        const questions = assessment?.questions || [];
         if (questions.length === 0) return;
 
         const unanswered = questions.filter(q => !answers[q.id]);
@@ -74,7 +74,7 @@ function TakeOnboardingAssessment() {
         );
     }
 
-    if (!assessment || assessment.length === 0) {
+    if (!assessment || !assessment.questions || assessment.questions.length === 0) {
         return (
             <>
                 <Navbar />
@@ -110,7 +110,7 @@ function TakeOnboardingAssessment() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {assessment.map((question, index) => (
+                    {assessment.questions.map((question, index) => (
                         <div
                             key={question.id}
                             className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6"

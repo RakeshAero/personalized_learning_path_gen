@@ -13,6 +13,9 @@ class Course(models.Model):
         related_name='courses'
     )
 
+    # Cached LLM-generated welcome/intro markdown (generated once, reused)
+    intro_content = models.TextField(blank=True, default='')
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):

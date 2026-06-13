@@ -22,8 +22,11 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# LLM API Key
-ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+# LLM (Google Gemini) configuration
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+# Free-tier Flash model. Change in .env if a model isn't available on your tier
+# (e.g. gemini-2.0-flash, gemini-3.5-flash).
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash')
 
 
 # Quick-start development settings - unsuitable for production

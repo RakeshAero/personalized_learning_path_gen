@@ -51,9 +51,7 @@ function Courses() {
         }
     };
 
-    const isEnrolled = (courseId) => {
-        return enrollments.some(e => e.course_id === courseId);
-    };
+    const getEnrollment = (courseId) => enrollments.find(e => e.course_id === courseId);
 
     if (loading) {
         return (
@@ -85,15 +83,18 @@ function Courses() {
                             </div>
                         ) : (
                             courses.map((course) => {
-                                const enrolled = isEnrolled(course.id);
-                                const isInstructor = user?.role === 'instructor';
+                                const enrollment = getEnrollment(course.id);
+                                const enrolled = !!enrollment;
+                                const needsOnboarding = enrollment?.has_onboarding && !enrollment?.onboarding_submitted;
+                                const isInstructor = user?.role === 'instructor' || user?.role === 'admin';
+                                const canOpen = (enrolled && !needsOnboarding) || isInstructor;
 
                                 return (
                                     <div
                                         key={course.id}
-                                        onClick={() => enrolled || isInstructor ? navigate(`/courses/${course.id}`) : null}
+                                        onClick={() => canOpen ? navigate(`/courses/${course.id}`) : null}
                                         className={`bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between transition-all ${
-                                            enrolled || isInstructor ? "cursor-pointer hover:shadow-md hover:border-indigo-200" : ""
+                                            canOpen ? "cursor-pointer hover:shadow-md hover:border-indigo-200" : ""
                                         }`}
                                     >
                                         <div>
@@ -102,8 +103,12 @@ function Courses() {
                                                     {course.title}
                                                 </h2>
                                                 {enrolled && (
-                                                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs px-2.5 py-1 rounded-full font-bold">
-                                                        ✓ Enrolled
+                                                    <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${
+                                                        needsOnboarding
+                                                            ? "bg-amber-50 text-amber-700 border-amber-100"
+                                                            : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                    }`}>
+                                                        {needsOnboarding ? "⚠ Assessment Required" : "✓ Enrolled"}
                                                     </span>
                                                 )}
                                             </div>
@@ -114,12 +119,27 @@ function Courses() {
 
                                         <div className="flex items-center justify-between mt-auto">
                                             {isInstructor ? (
-                                                <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
-                                                    Instructor Access
-                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
+                                                        Instructor Access
+                                                    </span>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); navigate(`/courses/${course.id}/generate`); }}
+                                                        className="text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 px-2.5 py-1 rounded-full transition-all"
+                                                    >
+                                                        ✨ Generate Curriculum
+                                                    </button>
+                                                </div>
+                                            ) : needsOnboarding ? (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/onboarding/${enrollment.onboarding_assessment_id}`); }}
+                                                    className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-sm hover:shadow transition-all"
+                                                >
+                                                    Take Assessment →
+                                                </button>
                                             ) : enrolled ? (
                                                 <button
-                                                    onClick={() => navigate(`/courses/${course.id}`)}
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/courses/${course.id}`); }}
                                                     className="px-4 py-2 text-indigo-600 hover:text-indigo-700 font-semibold text-sm transition-all"
                                                 >
                                                     Go to Course →

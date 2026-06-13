@@ -1,11 +1,17 @@
 import json
-import anthropic
+from google import genai
+from google.genai import types
 from django.conf import settings
+
+
+def _client():
+    """Build a Gemini client from the configured API key."""
+    return genai.Client(api_key=settings.GEMINI_API_KEY)
 
 
 def generate_personalized_path(course_title, modules, score, total, skill_scores=None):
     """
-    Calls Anthropic Claude to reorder course modules into a personalized
+    Calls Google Gemini to reorder course modules into a personalized
     learning path based on the learner's onboarding assessment result.
 
     Args:
@@ -17,7 +23,7 @@ def generate_personalized_path(course_title, modules, score, total, skill_scores
 
     Returns:
         list: [{"module_id": int, "title": str, "skip": bool, "reason": str}, ...]
-        Falls back to default module order if LLM call fails.
+        Falls back to default module order if the LLM call fails.
     """
     if not modules:
         return []
@@ -39,7 +45,7 @@ def generate_personalized_path(course_title, modules, score, total, skill_scores
     # Build skill breakdown section for the prompt
     if skill_scores:
         skill_lines = "\n".join(
-            f"  - {tag}: {pct}% {'✅ strong' if pct >= 70 else '⚠️ needs work' if pct >= 40 else '❌ weak'}"
+            f"  - {tag}: {pct}% {'strong' if pct >= 70 else 'needs work' if pct >= 40 else 'weak'}"
             for tag, pct in sorted(skill_scores.items(), key=lambda x: -x[1])
         )
         skill_section = f"\nSkill-domain breakdown:\n{skill_lines}"
@@ -66,34 +72,21 @@ Rules:
 - Every module must appear exactly once in your output.
 - "skip: true" means the system will visually mark it as optional — the learner still sees it.
 
-Return ONLY a valid JSON array, no other text, no markdown code fences.
-Each item must have exactly these keys: module_id (int), title (str), skip (bool), reason (str).
-
-Example format:
-[
-  {{"module_id": 2, "title": "Module Name", "skip": false, "reason": "Good foundation for beginners"}},
-  {{"module_id": 5, "title": "Advanced Topic", "skip": true, "reason": "Already proficient: Arrays 80%"}}
-]"""
+Return a JSON array. Each item must have exactly these keys:
+module_id (int), title (str), skip (bool), reason (str)."""
 
     try:
-        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-
-        response = client.messages.create(
-            model="claude-opus-4-5",
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}]
+        client = _client()
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                max_output_tokens=1024,
+                response_mime_type="application/json",
+            ),
         )
 
-        raw_text = response.content[0].text.strip()
-
-        # Strip markdown code fences if model wraps the output
-        if raw_text.startswith("```"):
-            raw_text = raw_text.split("```")[1]
-            if raw_text.startswith("json"):
-                raw_text = raw_text[4:]
-            raw_text = raw_text.strip()
-
-        path_data = json.loads(raw_text)
+        path_data = json.loads(response.text)
 
         # Validate structure: make sure all module_ids are present
         returned_ids = {item["module_id"] for item in path_data}
@@ -108,12 +101,8 @@ Example format:
         print(f"[LLM] JSON parse error: {e}. Using default path.")
         return _default_path(modules)
 
-    except anthropic.APIError as e:
-        print(f"[LLM] Anthropic API error: {e}. Using default path.")
-        return _default_path(modules)
-
     except Exception as e:
-        print(f"[LLM] Unexpected error: {e}. Using default path.")
+        print(f"[LLM] Gemini error: {e}. Using default path.")
         return _default_path(modules)
 
 
@@ -133,9 +122,77 @@ def _default_path(modules):
     ]
 
 
+def generate_curriculum(course_title, course_description, num_modules, target_audience):
+    """
+    Calls Gemini to auto-generate a full course curriculum:
+    modules (with subtopics) + onboarding assessment questions.
+
+    Returns:
+        dict with keys 'modules' and 'onboarding_assessment', or None on failure.
+    """
+    prompt = f"""You are an expert curriculum designer for an online course platform.
+
+Course title: "{course_title}"
+Course description: "{course_description}"
+Target audience: "{target_audience}"
+Number of modules to generate: {num_modules}
+
+Generate a complete, practical course curriculum. Return a JSON object with exactly these keys:
+
+"modules": array of {num_modules} module objects, each with:
+  - "title" (string)
+  - "description" (string, 1-2 sentences)
+  - "content" (string, detailed markdown content for the module — at least 3 paragraphs)
+  - "difficulty" (string: "easy", "medium", or "hard")
+  - "order" (int, starting from 1)
+  - "estimated_duration" (int, minutes)
+  - "subtopics": array of 2-4 subtopic objects, each with "title" (string) and "order" (int)
+
+"onboarding_assessment": object with:
+  - "title" (string, e.g. "Python Fundamentals Knowledge Check")
+  - "questions": array of {num_modules * 2} multiple-choice questions, each with:
+    - "question_text" (string)
+    - "option_1", "option_2", "option_3", "option_4" (strings — four distinct choices)
+    - "correct_answer" (string — must exactly match one of option_1..4)
+    - "difficulty" (string: "easy", "medium", or "hard")
+    - "skill_tag" (string — the topic/skill this question tests, e.g. "Arrays", "OOP", "SQL Joins")
+
+Rules:
+- Make the content genuinely educational, not placeholder text.
+- Skill tags should map to the module topics so the onboarding score breakdown is meaningful.
+- Vary difficulty across questions (mix easy, medium, hard).
+- Each question must have exactly one correct answer that is unambiguously right."""
+
+    try:
+        client = _client()
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                max_output_tokens=8192,
+                response_mime_type="application/json",
+            ),
+        )
+        data = json.loads(response.text)
+
+        if "modules" not in data or "onboarding_assessment" not in data:
+            print("[LLM] generate_curriculum: missing keys in response")
+            return None
+
+        return data
+
+    except json.JSONDecodeError as e:
+        print(f"[LLM] generate_curriculum JSON error: {e}")
+        return None
+    except Exception as e:
+        print(f"[LLM] generate_curriculum error: {e}")
+        return None
+
+
 def generate_course_intro_overview(course_title, course_description, modules):
     """
-    Calls Anthropic Claude to generate a welcoming note and an organized overview of the course's modules.
+    Calls Google Gemini to generate a welcoming note and an organized
+    overview of the course's modules, formatted as Markdown.
     """
     if not modules:
         return f"# Welcome to {course_title}\n\n{course_description}\n\nThere are no modules registered yet."
@@ -159,13 +216,16 @@ Provide:
 Format your output in clean Markdown. Avoid any meta-commentary, introductory remarks (like "Here is the response"), or trailing notes. Return ONLY the markdown.
 """
     try:
-        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-        response = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}]
+        client = _client()
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                max_output_tokens=1024,
+            ),
         )
-        return response.content[0].text.strip()
+        return response.text.strip()
+
     except Exception as e:
         print(f"[LLM] Error generating intro overview: {e}")
         # Return fallback markdown
@@ -175,4 +235,3 @@ Format your output in clean Markdown. Avoid any meta-commentary, introductory re
         for m in modules:
             fallback += f"### {m.title}\n{m.description}\n\n"
         return fallback
-
