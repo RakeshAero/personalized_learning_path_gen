@@ -19,12 +19,12 @@ class AssessmentViewSet(viewsets.ModelViewSet):
     queryset = Assessment.objects.all()
     serializer_class = AssessmentSerializer
 
-    # ── Submit Assessment ────────────────────────────────────────────────────
+    # Submit Assessment
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def submit(self, request, pk=None):
+    def submit(self, request, pk=None): # pk = Primary Key
         assessment = self.get_object()
 
-        # ── Guard: one submission per learner per assessment ──────────────────
+        # ── Guard: one submission per learner per assessment 
         if AssessmentSubmission.objects.filter(
             user=request.user, assessment=assessment
         ).exists():
@@ -33,13 +33,12 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ── Validate incoming payload ─────────────────────────────────────────
+        # ── Validate incoming payload 
         serializer = AssessmentSubmissionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         submitted_answers = serializer.validated_data['answers']
 
-        # ── Score the assessment & compute per-skill breakdown ────────────────
-        questions = list(assessment.questions.all())
+        # ── Score the assessment & compute per-skill breakdown         questions = list(assessment.questions.all())
         total = len(questions)
         total_score = 0
 
@@ -63,7 +62,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
             for tag, (correct, total_q) in skill_buckets.items()
         }
 
-        # ── Persist the submission ─────────────────────────────────────────────
+        #  Persist the submission 
         submission = AssessmentSubmission.objects.create(
             user=request.user,
             assessment=assessment,
@@ -73,7 +72,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
 
         percentage = round((total_score / total) * 100) if total > 0 else 0
 
-        # ── Generate personalised learning path via LLM ──────────────────────
+        #  Generate personalised learning path via LLM 
         # This runs after scoring so even if LLM fails, the score is already saved.
         path_generated = False
         try:
@@ -125,8 +124,8 @@ class AssessmentViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    # ── Check own submission ─────────────────────────────────────────────────
-    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    # Check own submission 
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated], url_path='my-submission')
     def my_submission(self, request, pk=None):
         """
         GET /api/assessments/{id}/my-submission/

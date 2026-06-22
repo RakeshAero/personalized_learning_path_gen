@@ -52,6 +52,9 @@ def generate_personalized_path(course_title, modules, score, total, skill_scores
     else:
         skill_section = ""
 
+    # Build an explicit ID→title map to show in the prompt so Gemini uses real DB IDs
+    id_map_text = ", ".join(f"{m['id']}='{m['title']}'" for m in modules)
+
     prompt = f"""You are a learning path optimizer for an online course platform.
 
 Course: "{course_title}"
@@ -59,6 +62,9 @@ Learner's onboarding assessment: {score}/{total} ({percentage}%) — skill level
 
 Available modules (current default order):
 {module_list_text}
+
+IMPORTANT: Use the exact integer module_id values listed above (e.g. {id_map_text}).
+Do NOT use sequential numbers like 1, 2, 3. Use the real IDs as shown.
 
 Your task:
 Reorder these modules into the best personalized learning path for this learner.
@@ -72,8 +78,8 @@ Rules:
 - Every module must appear exactly once in your output.
 - "skip: true" means the system will visually mark it as optional — the learner still sees it.
 
-Return a JSON array. Each item must have exactly these keys:
-module_id (int), title (str), skip (bool), reason (str)."""
+Return a JSON array with exactly {len(modules)} items. Each item must have exactly these keys:
+module_id (int — use the real IDs listed above), title (str), skip (bool), reason (str)."""
 
     try:
         client = _client()
@@ -81,18 +87,38 @@ module_id (int), title (str), skip (bool), reason (str)."""
             model=settings.GEMINI_MODEL,
             contents=prompt,
             config=types.GenerateContentConfig(
-                max_output_tokens=1024,
+                max_output_tokens=2048,
                 response_mime_type="application/json",
             ),
         )
 
         path_data = json.loads(response.text)
 
-        # Validate structure: make sure all module_ids are present
         returned_ids = {item["module_id"] for item in path_data}
         original_ids = {m["id"] for m in modules}
+
+        # Repair: if Gemini used sequential IDs (1,2,3...) but count matches,
+        # remap positionally to the actual DB IDs in the order Gemini chose.
+        if returned_ids != original_ids and len(path_data) == len(modules):
+            sorted_original = sorted(modules, key=lambda m: m["order"])
+            id_by_position = {i + 1: m["id"] for i, m in enumerate(sorted_original)}
+            title_to_id = {m["title"].lower(): m["id"] for m in modules}
+            repaired = []
+            for item in path_data:
+                # Try title match first, then positional
+                real_id = title_to_id.get(item.get("title", "").lower())
+                if real_id is None:
+                    real_id = id_by_position.get(item["module_id"])
+                if real_id is None:
+                    # Can't repair — fall back
+                    print(f"[LLM] Cannot remap module_id {item['module_id']}. Using fallback.")
+                    return _default_path(modules)
+                repaired.append({**item, "module_id": real_id})
+            print(f"[LLM] Remapped sequential IDs to real IDs: {[r['module_id'] for r in repaired]}")
+            return repaired
+
         if returned_ids != original_ids:
-            print(f"[LLM] Warning: returned IDs {returned_ids} don't match original {original_ids}. Using fallback.")
+            print(f"[LLM] ID mismatch and count differs: got {returned_ids}, expected {original_ids}. Using fallback.")
             return _default_path(modules)
 
         return path_data
