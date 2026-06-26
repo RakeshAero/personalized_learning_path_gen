@@ -12,7 +12,7 @@ class ProgressViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
-        """GET /api/progress/ — all progress for the current user"""
+        # GET /api/progress/ — show all progress for the current user
         progress = Progress.objects.filter(user=request.user).select_related('module', 'module__course')
         serializer = ProgressSerializer(progress, many=True)
         return Response(serializer.data)

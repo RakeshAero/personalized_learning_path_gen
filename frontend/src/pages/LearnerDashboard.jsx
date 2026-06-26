@@ -81,11 +81,32 @@ function LearnerDashboard() {
                                         </div>
 
                                         <div className="space-y-4">
+                                            {/* Progress Bar */}
+                                            {item.total_subtopics > 0 && (
+                                                <div>
+                                                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                                        <span>Progress</span>
+                                                        <span className="font-semibold text-gray-700">
+                                                            {item.completed_subtopics}/{item.total_subtopics} subtopics
+                                                        </span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                                        <div
+                                                            className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
+                                                            style={{ width: `${item.completion_pct}%` }}
+                                                        />
+                                                    </div>
+                                                    <p className="text-right text-[10px] text-indigo-600 font-bold mt-0.5">
+                                                        {item.completion_pct}%
+                                                    </p>
+                                                </div>
+                                            )}
+
                                             {/* Onboarding Status Badge / Banner */}
                                             {item.has_onboarding && (
                                                 <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold ${
-                                                    item.onboarding_submitted 
-                                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
+                                                    item.onboarding_submitted
+                                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
                                                         : "bg-amber-50 text-amber-800 border border-amber-100"
                                                 }`}>
                                                     <span>{item.onboarding_submitted ? "🎯 Onboarding Complete" : "⚠️ Onboarding Required"}</span>

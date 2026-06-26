@@ -18,9 +18,18 @@ function TakeOnboardingAssessment() {
 
     const fetchAssessment = async () => {
         try {
-            // Fetch THIS assessment (with its questions), not every question in the DB
-            const response = await API.get(`assessments/${id}/`);
-            setAssessment(response.data);
+            const [assessmentRes, submissionRes] = await Promise.all([
+                API.get(`assessments/${id}/`),
+                API.get(`assessments/${id}/my-submission/`),
+            ]);
+
+            // Already submitted — skip the form entirely and go to results
+            if (submissionRes.data?.submitted) {
+                navigate(`/skill-result/${id}`, { replace: true });
+                return;
+            }
+
+            setAssessment(assessmentRes.data);
         } catch (error) {
             console.error("Failed to fetch assessment", error);
             alert("Failed to load onboarding assessment.");
@@ -57,7 +66,7 @@ function TakeOnboardingAssessment() {
             navigate(`/skill-result/${id}`);
         } catch (error) {
             console.error("Failed to submit assessment", error);
-            alert(error.response?.data?.error || "Error submitting assessment. You may have already submitted this assessment.");
+            alert(error.response?.data?.error || "Submission failed. Please check your connection and try again.");
         } finally {
             setSubmitting(false);
         }

@@ -28,6 +28,7 @@ function CourseList() {
     const [editingContent, setEditingContent] = useState([]); // list of {type: 'header'|'paragraph', value: ''}
     const [savingContent, setSavingContent] = useState(false);
     const [markingProgress, setMarkingProgress] = useState(false);
+    const [regenerating, setRegenerating] = useState(false);
 
     useEffect(() => {
         fetchCourseData();
@@ -119,6 +120,18 @@ function CourseList() {
             setEditingContent([]);
         }
     }, [selectedItem, currentIndex]);
+
+    const handleRegeneratePath = async () => {
+        setRegenerating(true);
+        try {
+            const res = await API.post(`courses/${id}/regenerate-path/`);
+            setPathData(res.data.path_data);
+        } catch (err) {
+            alert(err.response?.data?.error || 'Failed to regenerate path.');
+        } finally {
+            setRegenerating(false);
+        }
+    };
 
     // Handle Module Accordion Toggling
     const toggleModule = (modId) => {
@@ -328,9 +341,19 @@ function CourseList() {
                     <div className="p-4 border-b border-gray-200 bg-white flex justify-between items-center shrink-0">
                         <h3 className="text-xs font-semibold tracking-wider text-gray-500 uppercase">Syllabus Outline</h3>
                         {pathData && (
-                            <span className="bg-indigo-50 text-indigo-650 text-xs px-2 py-0.5 rounded font-bold border border-indigo-200">
-                                AI Path
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="bg-indigo-50 text-indigo-650 text-xs px-2 py-0.5 rounded font-bold border border-indigo-200">
+                                    AI Path
+                                </span>
+                                <button
+                                    onClick={handleRegeneratePath}
+                                    disabled={regenerating}
+                                    title="Regenerate your personalised path"
+                                    className="text-[10px] text-indigo-500 hover:text-indigo-700 disabled:opacity-40 font-semibold underline underline-offset-2"
+                                >
+                                    {regenerating ? '...' : '↻ Regenerate'}
+                                </button>
+                            </div>
                         )}
                     </div>
 
@@ -372,6 +395,11 @@ function CourseList() {
                                                 )}
                                             </div>
                                             <h4 className="text-sm font-bold text-gray-800 truncate">{mod.title}</h4>
+                                            {pathItem?.reason && (
+                                                <p className="text-[10px] text-gray-400 mt-0.5 leading-tight line-clamp-2">
+                                                    {pathItem.reason}
+                                                </p>
+                                            )}
                                         </div>
                                         <span className={`text-xs text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
                                             ▼

@@ -24,7 +24,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
     def submit(self, request, pk=None): # pk = Primary Key
         assessment = self.get_object()
 
-        # ── Guard: one submission per learner per assessment 
+        # Guard: one submission per learner per assessment 
         if AssessmentSubmission.objects.filter(
             user=request.user, assessment=assessment
         ).exists():
@@ -33,12 +33,13 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ── Validate incoming payload 
+        # Validate incoming payload 
         serializer = AssessmentSubmissionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         submitted_answers = serializer.validated_data['answers']
 
-        # ── Score the assessment & compute per-skill breakdown         questions = list(assessment.questions.all())
+        # Score the assessment & compute per-skill breakdown         
+        questions = list(assessment.questions.all())
         total = len(questions)
         total_score = 0
 

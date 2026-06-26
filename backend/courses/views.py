@@ -82,6 +82,54 @@ class CourseViewSet(viewsets.ModelViewSet):
             "question_count": onboarding.questions.count(),
         })
 
+    # ── Regenerate Personalised Path ─────────────────────────────────────────────
+    @action(detail=True, methods=['post'], url_path='regenerate-path', permission_classes=[IsAuthenticated])
+    def regenerate_path(self, request, pk=None):
+        """
+        POST /api/courses/{id}/regenerate-path/
+        Re-runs the LLM path generator using the learner's existing onboarding
+        skill scores — no need to retake the assessment.
+        """
+        course = self.get_object()
+        onboarding = course.onboarding_assessments.filter(is_onboarding=True).first()
+        if not onboarding:
+            return Response(
+                {'error': 'This course has no onboarding assessment.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from assessments.models import AssessmentSubmission
+        try:
+            submission = AssessmentSubmission.objects.get(
+                user=request.user, assessment=onboarding
+            )
+        except AssessmentSubmission.DoesNotExist:
+            return Response(
+                {'error': 'Complete the onboarding assessment before regenerating your path.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        modules = list(
+            course.modules.all().order_by('order').values('id', 'title', 'difficulty', 'order')
+        )
+
+        from .llm import generate_personalized_path
+        path_data = generate_personalized_path(
+            course_title=course.title,
+            modules=modules,
+            score=submission.score,
+            total=onboarding.questions.count(),
+            skill_scores=submission.skill_scores,
+        )
+
+        PersonalizedLearningPath.objects.update_or_create(
+            user=request.user,
+            course=course,
+            defaults={'path_data': path_data},
+        )
+
+        return Response({'regenerated': True, 'path_data': path_data}, status=status.HTTP_200_OK)
+
     # ── Get dynamic intro for a Course ─────────────────────────────────────────
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def intro(self, request, pk=None):
@@ -251,6 +299,10 @@ def my_enrollments(request):
         user=request.user, is_active=True
     ).select_related('course')
 
+    from assessments.models import AssessmentSubmission
+    from progress.models import SubtopicProgress
+    from .models import Subtopic
+
     result = []
     for enrollment in enrollments:
         course = enrollment.course
@@ -259,11 +311,18 @@ def my_enrollments(request):
         has_onboarding = onboarding is not None
         onboarding_submitted = False
         if has_onboarding:
-            from assessments.models import AssessmentSubmission
             onboarding_submitted = AssessmentSubmission.objects.filter(
                 user=request.user,
                 assessment=onboarding
             ).exists()
+
+        total_subtopics = Subtopic.objects.filter(module__course=course).count()
+        completed_subtopics = SubtopicProgress.objects.filter(
+            user=request.user,
+            subtopic__module__course=course,
+            completed=True
+        ).count()
+        completion_pct = round((completed_subtopics / total_subtopics) * 100) if total_subtopics > 0 else 0
 
         result.append({
             "enrollment_id": enrollment.id,
@@ -274,6 +333,9 @@ def my_enrollments(request):
             "has_onboarding": has_onboarding,
             "onboarding_assessment_id": onboarding.id if onboarding else None,
             "onboarding_submitted": onboarding_submitted,
+            "total_subtopics": total_subtopics,
+            "completed_subtopics": completed_subtopics,
+            "completion_pct": completion_pct,
         })
 
     return Response(result)
