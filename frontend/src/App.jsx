@@ -20,6 +20,7 @@ import TakeOnboardingAssessment from './pages/TakeOnboardingAssessment';
 import LearnerDashboard from './pages/LearnerDashboard';
 import SkillResult from './pages/SkillResult';
 import GenerateCurriculum from './pages/GenerateCurriculum';
+import CourseAnalytics from './pages/CourseAnalytics';
 
 
 function App() {
@@ -70,6 +71,9 @@ function App() {
 
       {/* AI Curriculum Generator - Instructor only */}
       <Route path='/courses/:id/generate' element={<InstructorRoute> <GenerateCurriculum/> </InstructorRoute>} />
+
+      {/* Course Analytics - Instructor only */}
+      <Route path='/courses/:id/analytics' element={<InstructorRoute> <CourseAnalytics/> </InstructorRoute>} />
 
     </Routes>
   );  

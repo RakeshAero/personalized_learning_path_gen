@@ -1,12 +1,13 @@
 import { useEffect, useState, useContext } from "react";
 import API from "../api/axios";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/navbar";
 import { AuthContext } from "../context/AuthContext";
 
 function CourseList() {
     const { id } = useParams();
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
 
     // Core States
     const [course, setCourse] = useState(null);
@@ -340,21 +341,31 @@ function CourseList() {
                 <aside className="w-80 border-r border-gray-200 bg-white flex flex-col overflow-hidden shrink-0">
                     <div className="p-4 border-b border-gray-200 bg-white flex justify-between items-center shrink-0">
                         <h3 className="text-xs font-semibold tracking-wider text-gray-500 uppercase">Syllabus Outline</h3>
-                        {pathData && (
-                            <div className="flex items-center gap-2">
-                                <span className="bg-indigo-50 text-indigo-650 text-xs px-2 py-0.5 rounded font-bold border border-indigo-200">
-                                    AI Path
-                                </span>
+                        <div className="flex items-center gap-2">
+                            {pathData && (
+                                <>
+                                    <span className="bg-indigo-50 text-indigo-650 text-xs px-2 py-0.5 rounded font-bold border border-indigo-200">
+                                        AI Path
+                                    </span>
+                                    <button
+                                        onClick={handleRegeneratePath}
+                                        disabled={regenerating}
+                                        title="Regenerate your personalised path"
+                                        className="text-[10px] text-indigo-500 hover:text-indigo-700 disabled:opacity-40 font-semibold underline underline-offset-2"
+                                    >
+                                        {regenerating ? '...' : '↻ Regenerate'}
+                                    </button>
+                                </>
+                            )}
+                            {isInstructor && (
                                 <button
-                                    onClick={handleRegeneratePath}
-                                    disabled={regenerating}
-                                    title="Regenerate your personalised path"
-                                    className="text-[10px] text-indigo-500 hover:text-indigo-700 disabled:opacity-40 font-semibold underline underline-offset-2"
+                                    onClick={() => navigate(`/courses/${id}/analytics`)}
+                                    className="text-[10px] text-emerald-600 hover:text-emerald-800 font-semibold underline underline-offset-2"
                                 >
-                                    {regenerating ? '...' : '↻ Regenerate'}
+                                    📊 Analytics
                                 </button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-3 space-y-2">
