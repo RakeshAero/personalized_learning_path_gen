@@ -1,4 +1,4 @@
-# Custom Course Creator
+# Personalized Learning Path Generator
 
 An AI-powered personalized learning platform that generates custom, structured learning paths for students based on their onboarding assessments.
 
